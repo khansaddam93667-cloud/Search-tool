@@ -612,25 +612,9 @@ export default function App() {
                         className="overflow-hidden mt-3 absolute left-0 right-0 z-20 px-2 md:px-0"
                       >
                         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-lg shadow-slate-200/50 flex flex-col md:flex-row gap-4">
-                          <div className="flex-1 space-y-1.5 hidden sm:block md:hidden lg:block">
+                          <div className="flex-1 space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-1">Date Range</label>
                             <select 
-                              value={searchFilters.timeFrame}
-                              onChange={(e) => setSearchFilters(f => ({...f, timeFrame: e.target.value as any}))}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 appearance-none"
-                            >
-                              <option value="any">Any time</option>
-                              <option value="24h">Past 24 hours</option>
-                              <option value="7d">Past week</option>
-                              <option value="1m">Past month</option>
-                              <option value="1y">Past year</option>
-                            </select>
-                          </div>
-                          <div className="flex-1 space-y-1.5 block sm:hidden md:block lg:hidden">
-                             <div className="flex justify-between items-center px-1">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Date Range</label>
-                             </div>
-                             <select 
                               value={searchFilters.timeFrame}
                               onChange={(e) => setSearchFilters(f => ({...f, timeFrame: e.target.value as any}))}
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 appearance-none"
