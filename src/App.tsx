@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import LZString from 'lz-string';
 import { 
   Search, 
@@ -117,6 +117,16 @@ export default function App() {
 
   const activeItem = items.find(i => i.id === activeId) || null;
   const isProcessing = activeItem?.status === 'searching' || activeItem?.status === 'synthesizing' || activeItem?.isRefining;
+
+  const savedItems = useMemo(() =>
+    items.filter(i => i.isSaved).sort((a,b) => (b.timestamp||0) - (a.timestamp||0)),
+    [items]
+  );
+
+  const recentItems = useMemo(() =>
+    items.filter(i => !i.isSaved).sort((a,b) => (b.timestamp||0) - (a.timestamp||0)),
+    [items]
+  );
 
   const executeResearch = async (searchQuery: string, existingId?: string) => {
     if (!searchQuery.trim()) return;
@@ -327,14 +337,14 @@ export default function App() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-2">
-          {items.filter(i => i.isSaved).length > 0 && (
+          {savedItems.length > 0 && (
             <div className="mb-6">
               <div className="flex items-center gap-2 px-2 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 <Bookmark className="w-3.5 h-3.5" />
                 Saved Projects
               </div>
               <div className="space-y-1">
-                {items.filter(i => i.isSaved).sort((a,b) => (b.timestamp||0) - (a.timestamp||0)).map((item) => (
+                {savedItems.map((item) => (
                   <div key={item.id} className="group relative flex items-center">
                     <button
                       onClick={() => { 
@@ -372,7 +382,7 @@ export default function App() {
               Recent History
             </div>
             <div className="space-y-1">
-              {items.filter(i => !i.isSaved).sort((a,b) => (b.timestamp||0) - (a.timestamp||0)).map((item) => (
+              {recentItems.map((item) => (
                 <div key={item.id} className="group relative flex items-center">
                   <button
                     onClick={() => { 
@@ -403,7 +413,7 @@ export default function App() {
                   </div>
                 </div>
               ))}
-              {items.filter(i => !i.isSaved).length === 0 && (
+              {recentItems.length === 0 && (
                 <div className="px-3 py-2 text-sm text-slate-400 italic">No recent history</div>
               )}
             </div>
