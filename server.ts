@@ -15,7 +15,7 @@ app.use(express.json());
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-app.post('/api/research', async (req, res) => {
+app.post('/api/research', async (req, res, next) => {
   try {
     const { query, filters } = req.body;
     let promptConstraints = "";
@@ -51,12 +51,11 @@ app.post('/api/research', async (req, res) => {
 
     res.json({ text: response.text || "No research findings found." });
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
-app.post('/api/synthesize', async (req, res) => {
+app.post('/api/synthesize', async (req, res, next) => {
   try {
     const { content, objective } = req.body;
     const response = await ai.models.generateContent({
@@ -71,12 +70,11 @@ app.post('/api/synthesize', async (req, res) => {
 
     res.json({ text: response.text || "Synthesis failed." });
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
-app.post('/api/quickAction', async (req, res) => {
+app.post('/api/quickAction', async (req, res, next) => {
   try {
     const { content, action } = req.body;
     const response = await ai.models.generateContent({
@@ -91,9 +89,13 @@ app.post('/api/quickAction', async (req, res) => {
 
     res.json({ text: response.text || "Action failed." });
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
+});
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: err.message || 'Internal Server Error' });
 });
 
 async function startServer() {
