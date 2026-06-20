@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 app.post('/api/research', async (req, res) => {
   try {
@@ -117,4 +117,7 @@ async function startServer() {
   });
 }
 
-startServer();
+export { app };
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
