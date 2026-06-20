@@ -10,7 +10,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
@@ -96,6 +96,8 @@ app.post('/api/quickAction', async (req, res) => {
   }
 });
 
+export let server: any;
+
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'dist')));
@@ -112,9 +114,12 @@ async function startServer() {
   }
 
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
   });
 }
 
-startServer();
+// Only start the server if this file is run directly (not imported as a module in tests)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    startServer();
+}
