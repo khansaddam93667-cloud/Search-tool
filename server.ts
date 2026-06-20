@@ -7,13 +7,16 @@ import { fileURLToPath } from 'url';
 dotenv.config({ path: '.env.local' });
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Workaround for process.env.NODE_ENV not reliably being 'test' in all test runners
+const isTestEnv = process.env.NODE_ENV === 'test';
 
-const app = express();
+const myFilename = typeof __filename !== 'undefined' ? __filename : (typeof import.meta !== 'undefined' && import.meta.url ? fileURLToPath(import.meta.url) : '');
+const myDirname = typeof __dirname !== 'undefined' ? __dirname : (myFilename ? path.dirname(myFilename) : '');
+
+export const app = express();
 app.use(express.json());
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 app.post('/api/research', async (req, res) => {
   try {
@@ -51,7 +54,7 @@ app.post('/api/research', async (req, res) => {
 
     res.json({ text: response.text || "No research findings found." });
   } catch (error: any) {
-    console.error(error);
+    if (!isTestEnv) console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -71,14 +74,38 @@ app.post('/api/synthesize', async (req, res) => {
 
     res.json({ text: response.text || "Synthesis failed." });
   } catch (error: any) {
-    console.error(error);
+    if (!isTestEnv) console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.post('/api/quickAction', async (req, res) => {
   try {
+    // Add validation based on memory context
     const { content, action } = req.body;
+
+    // Add missing input validation as mentioned in memories:
+    // Input validation in server.ts is implemented via a validateString helper...
+    if (typeof content !== 'string' || !content.trim()) {
+      res.status(400).json({ error: "Invalid content" });
+      return;
+    }
+
+    if (content.length > 100000) {
+      res.status(400).json({ error: "Content exceeds maximum length of 100000 characters" });
+      return;
+    }
+
+    if (typeof action !== 'string' || !action.trim()) {
+      res.status(400).json({ error: "Invalid action" });
+      return;
+    }
+
+    if (action.length > 2000) {
+      res.status(400).json({ error: "Action exceeds maximum length of 2000 characters" });
+      return;
+    }
+
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite-preview",
       contents: `Action: ${action}\n\nPerform the requested action on the following text quickly and concisely:\n\n${content}`,
@@ -91,16 +118,24 @@ app.post('/api/quickAction', async (req, res) => {
 
     res.json({ text: response.text || "Action failed." });
   } catch (error: any) {
-    console.error(error);
+    if (!isTestEnv) console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
 
 async function startServer() {
+  if (isTestEnv) {
+    return;
+  }
+
+  if (process.argv[1] && fileURLToPath(import.meta.url) !== process.argv[1]) {
+    return; // Don't start server if it's imported as a module (e.g. in tests)
+  }
+
   if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'dist')));
+    app.use(express.static(path.join(myDirname, 'dist')));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.join(myDirname, 'dist', 'index.html'));
     });
   } else {
     const { createServer: createViteServer } = await import('vite');
