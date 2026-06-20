@@ -60,14 +60,8 @@ const StatusIcon = ({ item }: { item: ResearchItem }) => {
 
 export default function App() {
   const [query, setQuery] = useState('');
-  const [items, setItems] = useState<ResearchItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('insight_engine_history');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const [items, setItems] = useState<ResearchItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [openIds, setOpenIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('research');
@@ -83,8 +77,23 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('insight_engine_history', JSON.stringify(items));
-  }, [items]);
+    try {
+      const saved = localStorage.getItem('insight_engine_history');
+      if (saved) {
+        setItems(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to parse history", e);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('insight_engine_history', JSON.stringify(items));
+    }
+  }, [items, isInitialized]);
 
   useEffect(() => {
     const hash = window.location.hash;
