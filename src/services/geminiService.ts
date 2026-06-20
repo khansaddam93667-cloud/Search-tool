@@ -18,6 +18,7 @@ export const geminiService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_API_KEY || localStorage.getItem('API_KEY') || '',
       },
       body: JSON.stringify({ query, filters }),
     });
@@ -38,6 +39,7 @@ export const geminiService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_API_KEY || localStorage.getItem('API_KEY') || '',
       },
       body: JSON.stringify({ content, objective }),
     });
@@ -58,6 +60,7 @@ export const geminiService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_API_KEY || localStorage.getItem('API_KEY') || '',
       },
       body: JSON.stringify({ content, action }),
     });
