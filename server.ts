@@ -50,9 +50,10 @@ app.post('/api/research', async (req, res) => {
     });
 
     res.json({ text: response.text || "No research findings found." });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -70,9 +71,10 @@ app.post('/api/synthesize', async (req, res) => {
     });
 
     res.json({ text: response.text || "Synthesis failed." });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
   }
 });
 
@@ -90,9 +92,10 @@ app.post('/api/quickAction', async (req, res) => {
     });
 
     res.json({ text: response.text || "Action failed." });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    res.status(500).json({ error: errorMessage });
   }
 });
 
