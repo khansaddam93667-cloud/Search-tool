@@ -15,7 +15,16 @@ app.use(express.json());
 
 export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-app.post('/api/research', async (req, res) => {
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!process.env.API_KEY || apiKey !== process.env.API_KEY) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  next();
+};
+
+app.post('/api/research', requireAuth, async (req, res) => {
   try {
     const { query, filters } = req.body;
     let promptConstraints = "";
@@ -56,7 +65,7 @@ app.post('/api/research', async (req, res) => {
   }
 });
 
-app.post('/api/synthesize', async (req, res) => {
+app.post('/api/synthesize', requireAuth, async (req, res) => {
   try {
     const { content, objective } = req.body;
     const response = await ai.models.generateContent({
@@ -76,7 +85,7 @@ app.post('/api/synthesize', async (req, res) => {
   }
 });
 
-app.post('/api/quickAction', async (req, res) => {
+app.post('/api/quickAction', requireAuth, async (req, res) => {
   try {
     const { content, action } = req.body;
     const response = await ai.models.generateContent({
