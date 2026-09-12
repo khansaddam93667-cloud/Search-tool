@@ -4,7 +4,8 @@ const router = express.Router();
 // Mock data
 let movies = [
   { id: 1, title: 'Inception', rating: 5 },
-  { id: 2, title: 'Interstellar', rating: 4.5 }
+  { id: 2, title: 'Interstellar', rating: 4.8 },
+  { id: 3, title: 'The Dark Knight', rating: 4.9 }
 ];
 
 // Get all movies
@@ -15,52 +16,8 @@ router.get('/', (req, res) => {
 // Get a single movie
 router.get('/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
-  if (!movie) return res.status(404).send('Movie not found');
+  if (!movie) return res.status(404).json({ message: 'Movie not found' });
   res.json(movie);
-});
-
-// Add a new movie
-router.post('/', (req, res) => {
-  const movie = {
-    id: movies.length + 1,
-    title: req.body.title,
-    rating: req.body.rating
-  };
-  movies.push(movie);
-  res.status(201).json(movie);
-});
-
-// Update a movie rating
-router.patch('/:id', (req, res) => {
-  const movie = movies.find(m => m.id === parseInt(req.params.id));
-  if (!movie) return res.status(404).send('Movie not found');
-  
-  if (req.body.rating) movie.rating = req.body.rating;
-  res.json(movie);
-});
-
-// Delete a movie
-router.delete('/:id', (req, res) => {
-  const movieIndex = movies.findIndex(m => m.id === parseInt(req.params.id));
-  if (movieIndex === -1) return res.status(404).send('Movie not found');
-
-  const deletedMovie = movies.splice(movieIndex, 1);
-  res.json(deletedMovie);
-});
-
-module.exports = router;
-
-const router = express.Router();
-
-// Mock data
-let movies = [
-  { id: 1, title: 'Inception', rating: 5 },
-  { id: 2, title: 'Interstellar', rating: 4.8 }
-];
-
-// Get all movies
-router.get('/', (req, res) => {
-  res.json(movies);
 });
 
 // Add a new movie
@@ -93,7 +50,11 @@ router.put('/:id', (req, res) => {
 // Delete a movie
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  movies = movies.filter(m => m.id !== parseInt(id));
+  const movieIndex = movies.findIndex(m => m.id === parseInt(id));
+  if (movieIndex === -1) {
+    return res.status(404).json({ message: 'Movie not found' });
+  }
+  movies.splice(movieIndex, 1);
   res.json({ message: 'Movie deleted' });
 });
 
