@@ -23,11 +23,14 @@ router.get('/:id', (req, res) => {
 // Add a new movie
 router.post('/', (req, res) => {
   const { title, rating } = req.body;
-  if (!title || !rating) {
+  if (!title || rating === undefined) {
     return res.status(400).json({ message: 'Please provide title and rating' });
   }
+  if (typeof rating !== 'number' || rating < 0 || rating > 5) {
+    return res.status(400).json({ message: 'Rating must be a number between 0 and 5' });
+  }
   const newMovie = {
-    id: movies.length + 1,
+    id: movies.length > 0 ? Math.max(...movies.map(m => m.id)) + 1 : 1,
     title,
     rating
   };
@@ -39,6 +42,9 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const { rating } = req.body;
+  if (rating !== undefined && (typeof rating !== 'number' || rating < 0 || rating > 5)) {
+    return res.status(400).json({ message: 'Rating must be a number between 0 and 5' });
+  }
   const movie = movies.find(m => m.id === parseInt(id));
   if (!movie) {
     return res.status(404).json({ message: 'Movie not found' });
