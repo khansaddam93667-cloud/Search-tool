@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
 
 // Get a single movie
 router.get('/:id', (req, res) => {
-  const movie = movies.find(m => m.id === parseInt(req.params.id));
+  const movie = movies.find(m => m.id === parseInt(req.params.id, 10));
   if (!movie) return res.status(404).json({ message: 'Movie not found' });
   res.json(movie);
 });
@@ -23,10 +23,16 @@ router.get('/:id', (req, res) => {
 // Add a new movie
 router.post('/', (req, res) => {
   const { title, rating } = req.body;
+  if (title === undefined || rating === undefined) {
   if (!title || rating === undefined) {
     return res.status(400).json({ message: 'Please provide title and rating' });
   }
-  if (typeof rating !== 'number' || rating < 0 || rating > 5) {
+  if (typeof rating !== 'number' || rating < 0 || rating > 10) {
+    return res.status(400).json({ message: 'Rating must be a number between 0 and 10' });
+  }
+  const maxId = movies.length > 0 ? Math.max(...movies.map(m => m.id)) : 0;
+  const newMovie = {
+    id: maxId + 1,
     return res.status(400).json({ message: 'Rating must be a number between 0 and 5' });
   }
   const newMovie = {
@@ -39,18 +45,23 @@ router.post('/', (req, res) => {
 });
 
 // Update a movie rating
-router.put('/:id', (req, res) => {
+  const movie = movies.find(m => m.id === parseInt(id, 10));
   const { id } = req.params;
   const { rating } = req.body;
   if (rating !== undefined && (typeof rating !== 'number' || rating < 0 || rating > 5)) {
-    return res.status(400).json({ message: 'Rating must be a number between 0 and 5' });
+  if (rating !== undefined) {
+    if (typeof rating !== 'number' || rating < 0 || rating > 10) {
+      return res.status(400).json({ message: 'Rating must be a number between 0 and 10' });
+    }
+    movie.rating = rating;
+  }
   }
   const movie = movies.find(m => m.id === parseInt(id));
   if (!movie) {
     return res.status(404).json({ message: 'Movie not found' });
   }
   movie.rating = rating;
-  res.json(movie);
+  const movieIndex = movies.findIndex(m => m.id === parseInt(id, 10));
 });
 
 // Delete a movie
