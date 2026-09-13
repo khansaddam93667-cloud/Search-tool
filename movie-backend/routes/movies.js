@@ -24,6 +24,20 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   const { title, rating } = req.body;
   if (title === undefined || rating === undefined) {
+    return res.status(400).json({ message: 'Please provide title and rating' });
+  }
+  
+  if (typeof rating !== 'number' || rating < 0 || rating > 5) {
+    return res.status(400).json({ message: 'Rating must be a number between 0 and 5' });
+  }
+
+  const nextId = movies.length > 0 ? Math.max(...movies.map(m => m.id)) + 1 : 1;
+  const newMovie = {
+    id: nextId,
+    title,
+    rating
+  };
+  if (title === undefined || rating === undefined) {
   if (!title || rating === undefined) {
     return res.status(400).json({ message: 'Please provide title and rating' });
   }
@@ -38,7 +52,18 @@ router.post('/', (req, res) => {
   const newMovie = {
     id: movies.length > 0 ? Math.max(...movies.map(m => m.id)) + 1 : 1,
     title,
-    rating
+  const { rating } = req.body;
+  
+  if (rating === undefined || typeof rating !== 'number' || rating < 0 || rating > 5) {
+    return res.status(400).json({ message: 'Please provide a valid rating between 0 and 5' });
+  }
+
+  const movieId = parseInt(id);
+  if (isNaN(movieId)) {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+
+  const movie = movies.find(m => m.id === movieId);
   };
   movies.push(newMovie);
   res.status(201).json(newMovie);
