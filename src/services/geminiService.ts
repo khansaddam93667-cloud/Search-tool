@@ -1,7 +1,3 @@
-import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
 export interface ResearchResult {
   summary: string;
   sources: { title: string; url: string }[];
@@ -16,7 +12,6 @@ export interface SearchFilters {
 export const geminiService = {
   /**
    * Conducts research using Google Search grounding.
-   * Model: gemini-3-flash-preview
    */
   async research(query: string, filters?: SearchFilters): Promise<string> {
     let promptConstraints = "";
@@ -42,50 +37,38 @@ export const geminiService = {
       }
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Conduct a deep research on the following topic and provide a detailed report with facts and recent developments: ${query}${promptConstraints}`,
-      config: {
-        tools: [{ googleSearch: {} }]
-      }
+    const response = await fetch('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, promptConstraints })
     });
-
-    return response.text || "No research findings found.";
+    const data = await response.json();
+    return data.text || "No research findings found.";
   },
 
   /**
    * Synthesizes complex information using high-thinking mode.
-   * Model: gemini-3.1-pro-preview
    */
   async synthesize(content: string, objective: string): Promise<string> {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents: `Objective: ${objective}\n\nAnalyze and synthesize the following content to meet the objective. Focus on deep insights, identifying patterns, and providing strategic recommendations.\n\nContent:\n${content}`,
-      config: {
-        thinkingConfig: {
-          thinkingLevel: ThinkingLevel.HIGH
-        }
-      }
+    const response = await fetch('/api/synthesize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, objective })
     });
-
-    return response.text || "Synthesis failed.";
+    const data = await response.json();
+    return data.text || "Synthesis failed.";
   },
 
   /**
    * Performs quick edits or summaries.
-   * Model: gemini-3.1-flash-lite-preview
    */
   async quickAction(content: string, action: string): Promise<string> {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-lite-preview",
-      contents: `Action: ${action}\n\nPerform the requested action on the following text quickly and concisely:\n\n${content}`,
-      config: {
-        thinkingConfig: {
-          thinkingLevel: ThinkingLevel.MINIMAL
-        }
-      }
+    const response = await fetch('/api/quickAction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, action })
     });
-
-    return response.text || "Action failed.";
+    const data = await response.json();
+    return data.text || "Action failed.";
   }
 };
